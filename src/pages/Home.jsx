@@ -4,6 +4,7 @@ import Counter from "../components/Counter";
 import UserForm from "../components/UserForm";
 import RichTextEditor from "../components/RichTextEditor";
 import Dashboard from "../components/Dashboard";
+import UserDashboard from "../components/UserDashboard";
 import "@fontsource/poppins"; // Import Poppins font
 
 const Home = () => {
@@ -66,6 +67,7 @@ const Home = () => {
             { label: "Counter", value: "counter" },
             { label: "Rich Text Editor", value: "richTextEditor" },
             { label: "User-Form", value: "userForm" },
+            { label: "User-Dashboard", value: "userDashboard" },
             
           ].map((item) => (
             <ListItem key={item.value} disablePadding>
@@ -122,7 +124,7 @@ const Home = () => {
           {selectedComponent === "counter" && <Counter />}
           {selectedComponent === "richTextEditor" && <RichTextEditor />}
           {selectedComponent === "userForm" && <UserForm />}
-          
+          {selectedComponent === "userDashboard" && <UserDashboard />}
         </Paper>
       </Box>
     </Box>

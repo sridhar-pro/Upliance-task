@@ -24,6 +24,29 @@ const UserForm = ({ onUserSubmit }) => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      // Check if there are any unsaved changes
+      const savedData = localStorage.getItem("userData");
+      const parsedData = savedData ? JSON.parse(savedData) : {};
+      
+      if (JSON.stringify(parsedData.formData) !== JSON.stringify(formData)) {
+        // Display the confirmation dialog
+        const message = "You have unsaved changes. Are you sure you want to leave?";
+        event.returnValue = message; // For some browsers
+        return message; // For other browsers
+      }
+    };
+
+    // Add the event listener
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
