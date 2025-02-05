@@ -10,6 +10,7 @@ const UserForm = ({ onUserSubmit }) => {
   });
   const [userId, setUserId] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const savedData = localStorage.getItem("userData");
@@ -26,26 +27,48 @@ const UserForm = ({ onUserSubmit }) => {
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      // Check if there are any unsaved changes
       const savedData = localStorage.getItem("userData");
       const parsedData = savedData ? JSON.parse(savedData) : {};
-      
       if (JSON.stringify(parsedData.formData) !== JSON.stringify(formData)) {
-        // Display the confirmation dialog
         const message = "You have unsaved changes. Are you sure you want to leave?";
-        event.returnValue = message; // For some browsers
-        return message; // For other browsers
+        event.returnValue = message;
+        return message;
       }
     };
 
-    // Add the event listener
     window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Cleanup event listener on component unmount
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [formData]);
+
+  const validate = () => {
+    let tempErrors = {};
+
+    // Name Validation (only alphabets)
+    if (!formData.name.trim()) {
+      tempErrors.name = "Name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      tempErrors.name = "Name should contain only alphabets";
+    }
+
+    // Email Validation
+    if (!formData.email.trim()) {
+      tempErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      tempErrors.email = "Enter a valid email";
+    }
+
+    // Phone Validation (only numbers and 10 digits)
+    if (!formData.phone.trim()) {
+      tempErrors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      tempErrors.phone = "Phone must be 10 digits";
+    }
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0; // Returns true if no errors
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -54,12 +77,13 @@ const UserForm = ({ onUserSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newUser = { ...formData, userId };
-    localStorage.setItem("userData", JSON.stringify({ formData: newUser, userId }));
-    setIsSubmitted(true);
-    alert("Form submitted!");
-
-    onUserSubmit(newUser); // Update user count in Home.jsx
+    if (validate()) {
+      const newUser = { ...formData, userId };
+      localStorage.setItem("userData", JSON.stringify({ formData: newUser, userId }));
+      setIsSubmitted(true);
+      alert("Form submitted!");
+      onUserSubmit(newUser);
+    }
   };
 
   return (
@@ -69,7 +93,7 @@ const UserForm = ({ onUserSubmit }) => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        background: "linear-gradient(120deg,rgb(255, 255, 255),rgb(255, 255, 255),rgb(255, 242, 233))", // Gradient background
+        background: "linear-gradient(120deg,rgb(255, 255, 255),rgb(255, 255, 255),rgb(255, 242, 233))",
       }}
     >
       <Paper
@@ -79,7 +103,7 @@ const UserForm = ({ onUserSubmit }) => {
           width: "90%",
           padding: "30px",
           borderRadius: "16px",
-          backgroundColor: "rgba(255, 255, 255, 0.8)", // Glassmorphism effect
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
           backdropFilter: "blur(10px)",
           boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
         }}
@@ -102,60 +126,58 @@ const UserForm = ({ onUserSubmit }) => {
             fullWidth
             label="Name"
             name="name"
-            value={formData.name || ""}
+            value={formData.name}
             onChange={handleInputChange}
+            error={!!errors.name}
+            helperText={errors.name}
             sx={{
               my: 2,
               backgroundColor: "#fff",
               borderRadius: "8px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
+              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
             }}
           />
           <TextField
             fullWidth
             label="Address"
             name="address"
-            value={formData.address || ""}
+            value={formData.address}
             onChange={handleInputChange}
             sx={{
               my: 2,
               backgroundColor: "#fff",
               borderRadius: "8px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
+              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
             }}
           />
           <TextField
             fullWidth
             label="Email"
             name="email"
-            value={formData.email || ""}
+            value={formData.email}
             onChange={handleInputChange}
+            error={!!errors.email}
+            helperText={errors.email}
             sx={{
               my: 2,
               backgroundColor: "#fff",
               borderRadius: "8px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
+              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
             }}
           />
           <TextField
             fullWidth
             label="Phone"
             name="phone"
-            value={formData.phone || ""}
+            value={formData.phone}
             onChange={handleInputChange}
+            error={!!errors.phone}
+            helperText={errors.phone}
             sx={{
               my: 2,
               backgroundColor: "#fff",
               borderRadius: "8px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
+              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
             }}
           />
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 3 }}>
@@ -168,7 +190,7 @@ const UserForm = ({ onUserSubmit }) => {
                 background: "#5a3e2b",
                 "&:hover": {
                   background: "#4a3424",
-                  transform: "scale(1.1)", // Smooth hover effect
+                  transform: "scale(1.1)",
                 },
                 transition: "0.3s ease",
               }}
